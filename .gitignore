@@ -468,14 +468,4 @@ backend/getNews/urllib3/util/ssltransport.py
 backend/getNews/urllib3/util/timeout.py
 backend/getNews/urllib3/util/url.py
 backend/getNews/urllib3/util/wait.py
-cdk/.gitignore
-cdk/README.md
-cdk/app.py
-cdk/cdk.context.json
-cdk/cdk.json
-cdk/cdk/__init__.py
-cdk/cdk/cdk_stack.py
-cdk/requirements-dev.txt
-cdk/requirements.txt
-cdk/source.bat
-cdk/tests/
+
