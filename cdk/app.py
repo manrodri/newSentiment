@@ -1,23 +1,27 @@
 #!/usr/bin/env python3
 import os
-
-from aws_cdk import core as cdk
-
-# For consistency with TypeScript code, `cdk` is the preferred import name for
-# the CDK's core module.  The following line also imports it as `core` for use
-# with examples from the CDK Developer's Guide, which are in the process of
-# being updated to use `cdk`.  You may delete this import if you don't need it.
 from aws_cdk import core
 
 from cdk.cdk_stack import CdkStack
-# from cdk.lambda_stack import LambdaStack
+from cdk.s3 import S3Stack
+from cdk.frontend_pipeline import CodePipelineFrontendStack
+
+REGION = os.getenv('CDK_REGION')
+ACCOUNT = os.getenv('CDK_ACCOUNT')
 
 app = core.App()
+
+s3_stack = S3Stack(app, 's3buckets', env=core.Environment(account=ACCOUNT, region=REGION))
+cp_frontend = CodePipelineFrontendStack(
+    app,
+    'cp-frontend',
+    frontendBucket=core.Fn.import_value('frontend-bucket'),
+    env=core.Environment(account=ACCOUNT, region=REGION)
+)
+
+
 CdkStack(app, "CdkStack",
-    env=core.Environment(account='423754860743', region='eu-west-1'),
-    )
-# LambdaStack(app, "CdkStack",
-#     env=core.Environment(account='423754860743', region='eu-west-1'),
-#     )
+         env=core.Environment(account=ACCOUNT, region=REGION),
+         )
 
 app.synth()

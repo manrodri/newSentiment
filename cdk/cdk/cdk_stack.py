@@ -1,6 +1,5 @@
 from aws_cdk import (
     core as cdk,
-    aws_lambda as lambda_,
     aws_lambda_python as python_lambda,
     aws_apigateway as apigw,
     aws_iam as iam,
@@ -33,16 +32,18 @@ class CdkStack(cdk.Stack):
                                     sort_key=Attribute(name='time', type=AttributeType.STRING),
                                     write_capacity=1,
                                     read_capacity=1,
+                                    removal_policy=cdk.RemovalPolicy.DESTROY
                                     )
 
-        fetch_news_lambda = lambda_.Function(self, "FetchNewsFunction",
-                                             code=lambda_.Code.from_asset('fetchNews'),
-                                             runtime=lambda_.Runtime.PYTHON_3_8,  # required
-                                             handler="lambda_function.lambda_handler",
-                                             environment={
-                                                 'TABLE_NAME': news_table.table_name
-                                             }
-                                             )
+        fetch_news_lambda = python_lambda.PythonFunction(self, "FetchNewsFunction",
+                                                   entry="./fetchNews",
+                                                   runtime=Runtime.PYTHON_3_8,
+                                                   index="lambda_function.py",
+                                                   handler="lambda_handler",
+                                                   environment={
+                                                       'TABLE_NAME': news_table.table_name
+                                                   }
+                                                   )
 
         insert_news_lambda = python_lambda.PythonFunction(self, "InsertNewsFunction",
                                                           entry="./getNews",  # required
@@ -72,11 +73,15 @@ class CdkStack(cdk.Stack):
                 allow_methods=apigw.Cors.ALL_METHODS
             )
         )
+
         news = news_api.root.add_resource("news")
         news.add_method("POST")
 
         lambda_schedule = aws_events.Schedule.rate(core.Duration.days(1))
-        event_lambda_target = aws_events_targets.LambdaFunction(handler=insert_news_lambda)
+        event_lambda_target = aws_events_targets.LambdaFunction(
+            handler=insert_news_lambda,
+            event=aws_events.RuleTargetInput.from_object({"action": "insert news"})
+        )
         lambda_cw_event = aws_events.Rule(
             self,
             "Rule_ID_Here",
@@ -84,4 +89,5 @@ class CdkStack(cdk.Stack):
             "The once per day CloudWatch event trigger for the Lambda",
             enabled=True,
             schedule=lambda_schedule,
-            targets=[event_lambda_target])
+            targets=[event_lambda_target],
+        )
