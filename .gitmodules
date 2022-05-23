@@ -1,0 +1,3 @@
+[submodule "newsSentimentClient"]
+	path = newsSentimentClient
+	url = git@github.com:manrodri/newsSentimentClient.git
